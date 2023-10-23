@@ -1,0 +1,5 @@
+FROM registry.access.redhat.com/ubi9
+WORKDIR /jumpstarter
+ENV VERSION=0.3.1
+COPY install.sh .
+RUN ./install.sh ${VERSION}

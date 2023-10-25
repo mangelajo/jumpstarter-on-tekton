@@ -53,13 +53,13 @@
 
         - name: "NVIDIA test: nbody"
           shell: podman run -ti --runtime /usr/bin/nvidia-container-runtime quay.io/sroyer/jetpack-6-cuda-12.2-samples:latest nbody -benchmark -fp64 > artifacts/nbody
-
-        - name: "Run X Server once and capture output"
-          shell: |
-            X -retro -verbose :0 2>artifacts/X.log &
-            PID=$!
-            sleep 5
-            kill -9 $PID
+        # this is broken for the NX yet...
+        #- name: "Run X Server once and capture output"
+        #  shell: |
+        #    X -retro -verbose :0 2>artifacts/X.log &
+        #    PID=$!
+        #    sleep 5
+        #    kill -9 $PID
       always:
         - name: Capture dmesg
           shell: dmesg > artifacts/dmesg

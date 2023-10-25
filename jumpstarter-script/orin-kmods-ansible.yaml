@@ -1,0 +1,77 @@
+---
+- name: Capture artifacts from the board
+  hosts: boards
+  gather_facts: true
+
+  tasks:
+    - name: Make an artifacts directory
+      file:
+        path: ./artifacts
+        state: directory
+
+    - name: Capture lsmod
+      shell: lsmod > artifacts/lsmod
+
+    - name: Find nvidia devices
+      shell: find /dev -name "*nv*" > artifacts/nv-devices
+
+    - name: "Install podman"
+      dnf:
+        name: podman
+        state: present
+
+    - name: "Install the complete Jetpack libraries and dependencies"
+      dnf:
+        name: nvidia-jetpack
+        state: present
+
+    - name: "Add the nvidia-container-runtime repository"
+      shell: curl https://nvidia.github.io/libnvidia-container/centos8/libnvidia-container.repo >/etc/yum.repos.d/libnvidia-container.repo
+
+    - name: Install the container runtime
+      dnf:
+        name: nvidia-container-toolkit-base
+        state: present
+    - name: configure crun
+      replace:
+        path: /etc/nvidia-container-runtime/config.toml
+        regexp: '"runc"'
+        replace: '"crun"'
+
+    - name: Download the jetpack-6-cuda examples image container
+      containers.podman.podman_image:
+        name: quay.io/sroyer/jetpack-6-cuda-12.2-samples
+        tag: latest
+
+    - name: Run tests and always collect artifacts
+      block:
+        - name: "NVIDIA test: deviceQuery"
+          shell: podman run -ti --runtime /usr/bin/nvidia-container-runtime quay.io/sroyer/jetpack-6-cuda-12.2-samples:latest deviceQuery > artifacts/deviceQuery
+
+        - name: "NVIDIA test: bandwidthTest"
+          shell: podman run -ti --runtime /usr/bin/nvidia-container-runtime quay.io/sroyer/jetpack-6-cuda-12.2-samples:latest bandwidthTest > artifacts/bandwidthTest
+
+        - name: "NVIDIA test: nbody"
+          shell: podman run -ti --runtime /usr/bin/nvidia-container-runtime quay.io/sroyer/jetpack-6-cuda-12.2-samples:latest nbody -benchmark -fp64 > artifacts/nbody
+
+        - name: "Run X Server once and capture output"
+          shell: |
+            X -retro -verbose :0 2>artifacts/X.log &
+            PID=$!
+            sleep 5
+            kill -9 $PID
+      always:
+        - name: Capture dmesg
+          shell: dmesg > artifacts/dmesg
+          register: dmesg_output
+
+        - name: Download artifacts
+          synchronize:
+            src: ./artifacts/
+            dest:  "{{ lookup('env', 'PWD') }}/artifacts/"
+            mode: pull
+            perms: true
+            rsync_opts:
+              - "--chmod=Du=rwx,Dg=rwx,Do=rwx,Fu=rw,Fg=rw,Fo=rw"
+              # we are calling ansible as root from jumpstarter so we need to set permissions
+              # in a way that files can be accessed or removed afterwards

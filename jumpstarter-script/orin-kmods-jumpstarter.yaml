@@ -16,6 +16,7 @@ steps:
   - power: on
 
   - expect:
+      debug_escapes: false
       this: "login: "
       timeout: 300
   - send:
@@ -47,6 +48,7 @@ steps:
 
   - send:
       echo: true
+      debug_escapes: false
       this:
         - "sudo dnf install -y nvidia-jetpack-kmod\n"
 
@@ -57,6 +59,7 @@ steps:
       this: "Complete"
 
   - comment: "Rebooting to get latest kernel and kmods"
+
   - send:
       debug_escapes: false
       this:
@@ -100,7 +103,7 @@ steps:
 
   - local-shell:
       script: |
-        ansible-playbook -i inventory.yaml jumpstarter-scripts/orin-kmods-ansible.yaml
+        ansible-playbook -i inventory.yaml jumpstarter-script/orin-kmods-ansible.yaml
 
 cleanup:
   - comment: "Powering off and detaching the disk"

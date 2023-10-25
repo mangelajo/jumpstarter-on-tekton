@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: jumpstarter-on-orin-nx-run
+  finalizers:
+    - chains.tekton.dev/pipelinerun
+  labels:
+    tekton.dev/pipeline: jumpstarter-orin-nx
+spec:
+  pipelineRef:
+    name: jumpstarter-orin-nx
+  workspaces:
+    - name: checkout-files
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: lvms-vg1
+          volumeMode: Filesystem
+        status: {}
+    - name: image-files
+      persistentVolumeClaim:
+        claimName: lvm-rhel-image
+    - name: artifacts
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: lvms-vg1
+          volumeMode: Filesystem
+        status: {}
+    - name: ssh-credentials
+      secret:
+        secretName: ssh-key

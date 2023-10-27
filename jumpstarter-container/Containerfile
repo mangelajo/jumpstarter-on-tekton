@@ -3,5 +3,5 @@ WORKDIR /jumpstarter
 ENV VERSION=0.3.2
 COPY install.sh .
 RUN dnf install -y epel-release
-RUN dnf install -y ansible xz libguestfs libguestfs-tools guestfs-tools
+RUN dnf install -y ansible xz rsync
 RUN ./install.sh ${VERSION}

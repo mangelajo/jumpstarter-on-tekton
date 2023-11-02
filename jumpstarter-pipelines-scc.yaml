@@ -1,25 +1,27 @@
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
-
 metadata:
-  name: jumpstarter-tekton-scc
-
+  annotations:
+    kubernetes.io/description: 'jumpstarter SCC to use jumpstarter tasks on OpenShift pipelines'
+  name: jumpstarter-pipelines-scc
 allowHostDirVolumePlugin: true
-allowHostIPC: true
-allowHostNetwork: true
-allowHostPID: true
-allowHostPorts: true
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
 allowedCapabilities:
-- '*'
-allowedUnsafeSysctls:
-- '*'
-
+- CHOWN
+- SYS_CHROOT
+allowedUnsafeSysctls: null
 defaultAddCapabilities: null
 fsGroup:
   type: RunAsAny
-
+groups:
+- system:cluster-admins
+- system:nodes
+- system:masters
 priority: null
 readOnlyRootFilesystem: false
 requiredDropCapabilities: null
@@ -31,6 +33,5 @@ seccompProfiles:
 - '*'
 supplementalGroups:
   type: RunAsAny
-
 volumes:
 - '*'

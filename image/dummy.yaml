@@ -4,7 +4,6 @@ metadata:
   labels:
     run: dummy
   name: dummy
-  namespace: tektontutorial
 spec:
   volumes:
     - name: image
@@ -18,7 +17,6 @@ spec:
         - "3600"
       image: fedora:latest
       imagePullPolicy: Always
-      name: dummy
       volumeMounts:
         - mountPath: "/mnt"
           name: image
